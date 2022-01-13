@@ -18,7 +18,7 @@ url = 'https://www.naukri.com/java-developer-jobs-in-pune?k=java%20developer&l=p
 page = requests.get(url)
 # print(page.text)
 
-driver = webdriver.Chrome('C:\\Users\\rohan\\chromedriver_win32\\chromedriver.exe')
+driver = webdriver.Chrome('../chromedriver_win32/chromedriver.exe')
 driver.get(url)
 
 time.sleep(3)
