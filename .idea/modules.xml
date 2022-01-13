@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/employee-portal/employee-portal.iml" filepath="$PROJECT_DIR$/employee-portal/employee-portal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/employer-portal/employer-portal.iml" filepath="$PROJECT_DIR$/employer-portal/employer-portal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/naukri-web-scraping.iml" filepath="$PROJECT_DIR$/naukri-web-scraping.iml" />
+    </modules>
+  </component>
+</project>
