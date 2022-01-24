@@ -2,22 +2,29 @@
 # -*- coding: utf-8 -*-
 """Naukri Daily update - Using Chrome"""
 
+from pyspark.sql import SparkSession
 import re
 import os
 import io
 import sys
 import time
 import logging
+import json
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 # from PyPDF2 import PdfFileReader, PdfFileWriter
+from bs4 import BeautifulSoup
 from string import ascii_uppercase, digits
-from random import choice, randint
+from random import choice, randint, uniform
+from pyspark.sql.types import *
 from datetime import datetime
+from time import sleep
+import json
 # from reportlab.pdfgen import canvas
 # from reportlab.lib.pagesizes import letter
 from webdriver_manager.chrome import ChromeDriverManager as CM
@@ -38,7 +45,8 @@ updatePDF = True
 # ----- No other changes required -----
 
 # Set login URL
-NaukriURL = "https://www.naukri.com/recruit/login?msg=TO&URL=https%3A%2F%2Frecruit.naukri.com%2FhomePage%2Findex"
+# NaukriURL = "https://www.naukri.com/recruit/login?msg=TO&URL=https%3A%2F%2Frecruit.naukri.com%2FhomePage%2Findex"
+NaukriURL = "https://enterprise.naukri.com"
 
 logging.basicConfig(
     level=logging.INFO, filename="naukri.log", format="%(asctime)s    : %(message)s"
@@ -163,10 +171,11 @@ def LoadNaukri(headless):
     # updated to use ChromeDriverManager to match correct chromedriver automatically
     driver = None
     try:
-        driver = webdriver.Chrome(executable_path='../chromedriver_win32/chromedriver.exe', chrome_options=options)
+        s = Service('../chromedriver_win32/chromedriver.exe')
+        driver = webdriver.Chrome(service=s, options=options)
         # driver = webdriver.Chrome(executable_path=CM().install(), options=options)
     except:
-        driver = webdriver.Chrome(chrome_options=options)
+        driver = webdriver.Chrome(options=options)
         print("Exception caught. Starting Chrome again...")
     log_msg("Google Chrome Launched!")
 
@@ -188,6 +197,7 @@ def naukriLogin(headless = False):
 
         if not is_element_present(driver, By.ID, "Sug_autoComplete"):
             print("Attempting to log in.")
+            loginTab = None
             if is_element_present(driver, By.ID, "toggleRCBLoginForm"):
                 loginTab = driver.find_element(By.ID, "toggleRCBLoginForm")
                 loginTab = loginTab.find_element(By.ID, "toggleForm")
@@ -202,7 +212,7 @@ def naukriLogin(headless = False):
                 passFieldElement = GetElement(driver, "password", locator="ID")
                 time.sleep(1)
                 loginXpath = '//*[@type="submit"]'
-                loginButton = driver.find_element_by_xpath(loginXpath)
+                loginButton = driver.find_element(By.XPATH, loginXpath)
             elif is_element_present(driver, By.NAME, "userName"):
                 print("Login2")
                 emailFieldElement = GetElement(driver, "userName", locator="NAME")
@@ -210,7 +220,7 @@ def naukriLogin(headless = False):
                 passFieldElement = GetElement(driver, "password", locator="NAME")
                 time.sleep(1)
                 loginXpath = '//*[@type="submit"]'
-                loginButton = driver.find_element_by_xpath(loginXpath)
+                loginButton = driver.find_element(By.XPATH, loginXpath)
             else:
                 log_msg("No elements found to login.")
 
@@ -219,7 +229,7 @@ def naukriLogin(headless = False):
                 emailFieldElement.send_keys('ashwini.bogadi@worldemp.com')
                 time.sleep(1)
                 passFieldElement.clear()
-                passFieldElement.send_keys('Hello@123')
+                passFieldElement.send_keys('Miss@1234')
                 time.sleep(1)
                 loginButton.send_keys(Keys.ENTER)
                 time.sleep(35)
@@ -237,56 +247,6 @@ def naukriLogin(headless = False):
         else:
             log_msg("Unknown Login Error")
             return (status, driver)
-
-        # emailFieldElement = None
-        # if is_element_present(driver, By.ID, "emailTxt"):
-        #     emailFieldElement = GetElement(driver, "emailTxt", locator="ID")
-        #     time.sleep(1)
-        #     passFieldElement = GetElement(driver, "pwd1", locator="ID")
-        #     time.sleep(1)
-        #     loginXpath = "//*[@type='submit' and @value='Login']"
-        #     loginButton = driver.find_element_by_xpath(loginXpath)
-        #
-        # elif is_element_present(driver, By.ID, "usernameField"):
-        #     emailFieldElement = GetElement(driver, "usernameField", locator="ID")
-        #     time.sleep(1)
-        #     passFieldElement = GetElement(driver, "passwordField", locator="ID")
-        #     time.sleep(1)
-        #     loginXpath = '//*[@type="submit"]'
-        #     loginButton = driver.find_element_by_xpath(loginXpath)
-        #
-        # else:
-        #     log_msg("None of the elements found to login.")
-        #
-        # if emailFieldElement is not None:
-        #     emailFieldElement.clear()
-        #     emailFieldElement.send_keys(username)
-        #     time.sleep(1)
-        #     passFieldElement.clear()
-        #     passFieldElement.send_keys(password)
-        #     time.sleep(1)
-        #     loginButton.send_keys(Keys.ENTER)
-        #     time.sleep(1)
-        #
-        #     # Added click to Skip button
-        #     print("Checking Skip button")
-        #     skipAdXpath = "//*[text() = 'SKIP AND CONTINUE']"
-        #     if WaitTillElementPresent(driver, skipAdXpath, locator="XPATH", timeout=10):
-        #         GetElement(driver, skipAdXpath, locator="XPATH").click()
-        #
-        #     # CheckPoint to verify login
-        #     if WaitTillElementPresent(driver, "search-jobs", locator="ID", timeout=40):
-        #         CheckPoint = GetElement(driver, "search-jobs", locator="ID")
-        #         if CheckPoint:
-        #             log_msg("Naukri Login Successful")
-        #             status = True
-        #             return (status, driver)
-        #         else:
-        #             log_msg("Unknown Login Error")
-        #             return (status, driver)
-        #     else:
-        #         log_msg("Unknown Login Error")
-        #         return (status, driver)
 
     except Exception as e:
         catch(e)
@@ -347,100 +307,89 @@ def UpdateProfile(driver):
     except Exception as e:
         catch(e)
 
+def get_data(spark, driver, input):
+    schema = StructType([
+        StructField("domain",StringType(),True),
+        StructField("technology",StringType(),True),
+        StructField("res_count",LongType(),True),
+        StructField("created_date",StringType(),True)
+    ])
 
-# def UpdateResume():
-#     try:
-#         # random text with with random location and size
-#         txt = randomText()
-#         xloc = random.randint(700, 1000)  # this ensures that text is 'out of page'
-#         fsize = random.randint(1, 10)
-#
-#         packet = io.BytesIO()
-#         can = canvas.Canvas(packet, pagesize=letter)
-#         can.setFont("Helvetica", fsize)
-#         can.drawString(xloc, 100, "lon")
-#         can.save()
-#
-#         packet.seek(0)
-#         new_pdf = PdfFileReader(packet)
-#         existing_pdf = PdfFileReader(open(originalResumePath, "rb"))
-#         pagecount = existing_pdf.getNumPages()
-#         print("Found %s pages in PDF" % pagecount)
-#
-#         output = PdfFileWriter()
-#         # Merging new pdf with last page of my existing pdf
-#         # Updated to get last page for pdf files with varying page count
-#         for pageNum in range(pagecount - 1):
-#             output.addPage(existing_pdf.getPage(pageNum))
-#
-#         page = existing_pdf.getPage(pagecount - 1)
-#         page.mergePage(new_pdf.getPage(0))
-#         output.addPage(page)
-#         # save the new resume file
-#         with open(modifiedResumePath, "wb") as outputStream:
-#             output.write(outputStream)
-#         print("Saved modified PDF : %s" % modifiedResumePath)
-#         return os.path.abspath(modifiedResumePath)
-#     except Exception as e:
-#         catch(e)
-#     return os.path.abspath(originalResumePath)
-#
-#
-# def UploadResume(driver, resumePath):
-#     try:
-#         attachCVID = "attachCV"
-#         CheckPointXpath = "//*[contains(@class, 'updateOn')]"
-#         saveXpath = "//button[@type='button']"
-#
-#         driver.get("https://www.naukri.com/mnjuser/profile")
-#         WaitTillElementPresent(driver, attachCVID, locator="ID", timeout=10)
-#         AttachElement = GetElement(driver, attachCVID, locator="ID")
-#         AttachElement.send_keys(resumePath)
-#
-#         if WaitTillElementPresent(driver, saveXpath, locator="ID", timeout=5):
-#             saveElement = GetElement(driver, saveXpath, locator="XPATH")
-#             saveElement.click()
-#
-#         WaitTillElementPresent(driver, CheckPointXpath, locator="XPATH", timeout=30)
-#         CheckPoint = GetElement(driver, CheckPointXpath, locator="XPATH")
-#         if CheckPoint:
-#             LastUpdatedDate = CheckPoint.text
-#             todaysDate1 = datetime.today().strftime("%b %d, %Y")
-#             todaysDate2 = datetime.today().strftime("%b %#d, %Y")
-#             if todaysDate1 in LastUpdatedDate or todaysDate2 in LastUpdatedDate:
-#                 log_msg(
-#                     "Resume Document Upload Successful. Last Updated date = %s"
-#                     % LastUpdatedDate
-#                 )
-#             else:
-#                 log_msg(
-#                     "Resume Document Upload failed. Last Updated date = %s"
-#                     % LastUpdatedDate
-#                 )
-#         else:
-#             log_msg("Resume Document Upload failed. Last Updated date not found.")
-#
-#     except Exception as e:
-#         catch(e)
-#     time.sleep(2)
+    complete_df = spark.createDataFrame([('','', None, '')], schema)
 
+    search_box_name = 'ezString'
+    search_btn_id = 'gnbSrchBtn'
+    resumes_per_page_name = 'resumesPerPage'
+
+    current_ts = str(datetime.now())
+
+    for obj in input:
+        domain = obj["domain"][0]
+        for tech in obj["technology"]:
+            sleep(round(uniform(0.00, 10.00), 2))
+            if is_element_present(driver, By.NAME, search_box_name):
+                search_box_element = GetElement(driver, search_box_name, locator="NAME")
+                search_button_element = GetElement(driver, search_btn_id, locator="ID")
+                util_policy_popup_class = 'btn btn-primary btnCtr lt_close'
+
+                search_box_element.send_keys(tech)
+                search_button_element.send_keys(Keys.ENTER)
+                time.sleep(3)
+                if is_element_present(driver, By.CLASS_NAME, util_policy_popup_class):
+                    util_policy_popup_element = GetElement(driver, util_policy_popup_class, locator="CLASS_NAME")
+                    util_policy_popup_element.send_keys(Keys.ENTER)
+
+                if is_element_present(driver, By.NAME, resumes_per_page_name):
+                    soup = BeautifulSoup(driver.page_source, 'html.parser')
+                    resumes_per_page = soup.find(id=resumes_per_page_name)
+                    script = soup.find_all('script')
+                    paragraphs = []
+                    for x in script:
+                        line = str(x)
+                        pos = line.find('totalCount')
+                        if pos > -1:
+                            words = line.split(' ')
+                            res_count = words[words.index("searchData['totalCount']") + 2].strip()[:-1]
+                            part_df = spark.createDataFrame([(domain, tech, int(res_count), current_ts)], schema)
+                            complete_df = complete_df.union(part_df)
+                            break
+                else:
+                    log_msg("No results found.")
+            else:
+                log_msg("No search box found.")
+    complete_df = complete_df.withColumn('created_ts', complete_df['created_date'].cast(TimestampType())).drop('created_date')
+    return complete_df
+
+def ingest_data(complete_df):
+    complete_df = complete_df.where("technology != ''")
+    complete_df.write.format("jdbc").mode("append") \
+        .options(
+        url='jdbc:postgresql://localhost:5432/postgres',
+        dbtable='main.resume_count',
+        user='postgres',
+        password='admin',
+        driver='org.postgresql.Driver') \
+        .save()
 
 def main():
     log_msg("-----Naukri.py Script Run Begin-----")
+
+    spark = SparkSession \
+        .builder \
+        .appName("ingestion") \
+        .config("spark.jars", "../Database/postgresql-42.3.1.jar") \
+        .getOrCreate()
+
+    with open("data.json", "r") as jsonfile:
+        input = json.load(jsonfile)
+
     driver = None
     try:
         status, driver = naukriLogin()
         if status:
-            print('Start getting data here.')
-            # UpdateProfile(driver)
-            # if os.path.exists(originalResumePath):
-            #     if updatePDF:
-            #         resumePath = UpdateResume()
-            #         UploadResume(driver, resumePath)
-            #     else:
-            #         UploadResume(driver, originalResumePath)
-            # else:
-            #     log_msg("Resume not found at %s " % originalResumePath)
+            complete_df = get_data(spark, driver, input["data"])
+            complete_df.show()
+            ingest_data(complete_df)
 
     except Exception as e:
         catch(e)
@@ -454,3 +403,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+

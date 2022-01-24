@@ -7,5 +7,6 @@
     <content url="jar://$USER_HOME$/spark-3.2.0-bin-hadoop2.7/spark-3.2.0-bin-hadoop2.7/python/lib/py4j-0.10.9.2-src.zip!/" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="postgresql-42.3.1" level="project" />
   </component>
 </module>

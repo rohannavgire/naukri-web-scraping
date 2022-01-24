@@ -1,0 +1,9 @@
+CREATE SCHEMA IF NOT EXISTS main;
+
+CREATE TABLE IF NOT EXISTS main.resume_count (
+	serial_no BIGSERIAL UNIQUE PRIMARY KEY NOT NULL,
+	domain VARCHAR ( 255 ) NOT NULL,
+	technology VARCHAR ( 255 ) NOT NULL,
+	res_count BIGINT NOT NULL,
+	created_ts TIMESTAMP NOT NULL
+);

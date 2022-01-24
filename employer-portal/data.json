@@ -1,0 +1,34 @@
+{
+  "data": [
+    {
+      "domain": ["mechanical"],
+      "technology": [
+        "Inventor",
+        "Solid Edge",
+        "Solid Works",
+        "Autocad",
+        "Catia",
+        "NX",
+        "Pro-E",
+        "Creo",
+        "AnSys",
+        "Moldflow"
+      ]
+    },
+    {
+      "domain": ["IT"],
+      "technology": [
+        "Java",
+        "Angular",
+        ".NET",
+        "Python",
+        "Spark",
+        "Databricks",
+        "ReactJS",
+        "DevOps",
+        "AWS",
+        "Azure"
+      ]
+    }
+  ]
+}
