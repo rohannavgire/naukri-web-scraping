@@ -45,7 +45,6 @@ updatePDF = True
 # ----- No other changes required -----
 
 # Set login URL
-# NaukriURL = "https://www.naukri.com/recruit/login?msg=TO&URL=https%3A%2F%2Frecruit.naukri.com%2FhomePage%2Findex"
 NaukriURL = "https://enterprise.naukri.com"
 
 logging.basicConfig(
