@@ -4,15 +4,15 @@
       "domain": ["mechanical"],
       "technology": [
         "Inventor",
-        "Solid Edge",
-        "Solid Works",
+        "SolidEdge",
+        "SolidWorks",
         "Autocad",
         "Catia",
-        "NX",
+        "Siemens NX",
         "Pro-E",
         "Creo",
         "AnSys",
-        "Moldflow"
+        "Revit"
       ]
     },
     {
@@ -20,14 +20,25 @@
       "technology": [
         "Java",
         "Angular",
-        ".NET",
+        ".NET, dotNET",
         "Python",
         "Spark",
         "Databricks",
         "ReactJS",
         "DevOps",
         "AWS",
-        "Azure"
+        "Azure",
+        "Laravel",
+        "Front End, Frontend",
+        "Back End, Backend",
+        "Fullstack",
+        "Vue.JS, Vue",
+        "Node.JS, Node",
+        "Javascript",
+        "Data Scientist",
+        "MySQL",
+        "SQL Server",
+        "MongoDB"
       ]
     }
   ]
