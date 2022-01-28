@@ -1,44 +1,133 @@
 {
-  "data": [
+  "data":[
     {
-      "domain": ["mechanical"],
-      "technology": [
-        "Inventor",
-        "SolidEdge",
-        "SolidWorks",
-        "Autocad",
-        "Catia",
-        "Siemens NX",
-        "Pro-E",
-        "Creo",
-        "AnSys",
-        "Revit"
+      "domain":[
+        "Mechanical"
+      ],
+      "technology":[
+        {
+          "name":"Inventor",
+          "category":"None"
+        },
+        {
+          "name":"SolidEdge",
+          "category":"None"
+        },
+        {
+          "name":"SolidWorks",
+          "category":"None"
+        },
+        {
+          "name":"AutoCAD",
+          "category":"None"
+        },
+        {
+          "name":"Catia",
+          "category":"None"
+        },
+        {
+          "name":"Siemens NX",
+          "category":"None"
+        },
+        {
+          "name":"Pro-E",
+          "category":"None"
+        },
+        {
+          "name":"Creo",
+          "category":"None"
+        },
+        {
+          "name":"AnSys",
+          "category":"None"
+        },
+        {
+          "name":"Revit",
+          "category":"None"
+        }
       ]
     },
     {
-      "domain": ["IT"],
-      "technology": [
-        "Java",
-        "Angular",
-        ".NET, dotNET",
-        "Python",
-        "Spark",
-        "Databricks",
-        "ReactJS",
-        "DevOps",
-        "AWS",
-        "Azure",
-        "Laravel",
-        "Front End, Frontend",
-        "Back End, Backend",
-        "Fullstack",
-        "Vue.JS, Vue",
-        "Node.JS, Node",
-        "Javascript",
-        "Data Scientist",
-        "MySQL",
-        "SQL Server",
-        "MongoDB"
+      "domain":[
+        "IT"
+      ],
+      "technology":[
+        {
+          "name":"Java",
+          "category":"Backend"
+        },
+        {
+          "name":"Angular",
+          "category":"Frontend"
+        },
+        {
+          "name":".NET, dotNET",
+          "category":"Backend"
+        },
+        {
+          "name":"Python",
+          "category":"Backend"
+        },
+        {
+          "name":"Spark",
+          "category":"Data"
+        },
+        {
+          "name":"Databricks",
+          "category":"Data"
+        },
+        {
+          "name":"ReactJS",
+          "category":"Frontend"
+        },
+        {
+          "name":"DevOps",
+          "category":"Misc"
+        },
+        {
+          "name":"AWS",
+          "category":"Cloud"
+        },
+        {
+          "name":"Azure",
+          "category":"Cloud"
+        },
+        {
+          "name":"Laravel",
+          "category":"Backend"
+        },
+        {
+          "name":"Fullstack, Full Stack",
+          "category":"Misc"
+        },
+        {
+          "name":"Vue.JS, Vue",
+          "category":"Frontend"
+        },
+        {
+          "name":"Node.JS, Node",
+          "category":"Backend"
+        },
+        {
+          "name":"Javascript",
+          "category":"Backend"
+        },
+        {
+          "name":"Data Scientist",
+          "category":"Data"
+        },
+        {
+          "name":"MySQL",
+          "category":"Data"
+        },
+        {
+          "name":"SQL Server",
+          "category":"Data"
+        },
+        {
+          "name":"MongoDB",
+          "category":"Data"
+        }
       ]
     }
   ]

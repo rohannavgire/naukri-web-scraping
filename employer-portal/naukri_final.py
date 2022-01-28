@@ -18,6 +18,9 @@ from random import uniform
 from pyspark.sql.types import *
 from datetime import datetime
 from time import sleep
+from retry import retry
+from NoResultsFoundException import NoResultsFoundException
+
 
 # Set login URL
 NaukriURL = "https://enterprise.naukri.com"
@@ -153,7 +156,7 @@ def load_naukri(headless):
 
 
 def naukri_login(properties, headless=False):
-    """ Open Chrome browser and Login to Naukri.com"""
+    """Open Chrome browser and Login to Naukri.com"""
     status = False
     driver = None
 
@@ -218,21 +221,69 @@ def naukri_login(properties, headless=False):
     return status, driver
 
 
-def get_data(spark, driver, input):
+@retry(NoResultsFoundException, delay=2, tries=5)
+def get_resume_count(spark, driver, domain, tech_category, tech_name, current_date, complete_df):
+    print(f"Searching for {tech_name}")
+    resumes_per_page_name = 'resumesPerPage'
+
     schema = StructType([
-        StructField("domain", StringType(), True),
-        StructField("technology", StringType(), True),
-        StructField("res_count", LongType(), True),
-        StructField("created_date", StringType(), True)
+        StructField("domain", StringType(), False),
+        StructField("category", StringType(), True),
+        StructField("technology", StringType(), False),
+        StructField("res_count", LongType(), False),
+        StructField("created_date", StringType(), False)
     ])
 
-    complete_df = spark.createDataFrame([('', '', None, '')], schema)
+    try:
+        if is_element_present(driver, By.NAME, resumes_per_page_name):
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            script = soup.find_all('script')
+            for x in script:
+                line = str(x)
+                pos = line.find('totalCount')
+                if pos > -1:
+                    words = line.split(' ')
+                    res_count = words[words.index("searchData['totalCount']") + 2].strip()[:-1]
+                    part_df = spark.createDataFrame([(domain,
+                                                      tech_category,
+                                                      tech_name,
+                                                      int(res_count),
+                                                      current_date)],
+                                                    schema)
+                    complete_df = complete_df.union(part_df)
+                    break
+            return complete_df
+        else:
+            raise NoResultsFoundException(f"No results found for '{tech_name}'.")
+    except Exception:
+        driver.back()
+        search_box_name = 'ezString'
+        search_btn_id = 'gnbSrchBtn'
+        search_box_element = get_element(driver, search_box_name, locator="NAME")
+        search_button_element = get_element(driver, search_btn_id, locator="ID")
+        search_box_element.send_keys(tech_name)
+        search_button_element.send_keys(Keys.ENTER)
+        time.sleep(1)
+        raise
+
+
+def get_data(spark, driver, input):
+    """Populate dataframe with resume count"""
+    schema = StructType([
+        StructField("domain", StringType(), False),
+        StructField("category", StringType(), True),
+        StructField("technology", StringType(), False),
+        StructField("res_count", LongType(), False),
+        StructField("created_date", StringType(), False)
+    ])
+
+    complete_df = spark.createDataFrame([('', '', '', 0, '')], schema)
 
     search_box_name = 'ezString'
     search_btn_id = 'gnbSrchBtn'
     resumes_per_page_name = 'resumesPerPage'
 
-    current_ts = str(datetime.now())
+    current_date = str(datetime.now())
 
     for obj in input:
         domain = obj["domain"][0]
@@ -243,27 +294,35 @@ def get_data(spark, driver, input):
                 search_button_element = get_element(driver, search_btn_id, locator="ID")
                 util_policy_popup_class = 'btn btn-primary btnCtr lt_close'
 
-                search_box_element.send_keys(tech)
+                tech_name = tech["name"]
+                tech_category = tech["category"]
+                search_box_element.send_keys(tech_name)
                 search_button_element.send_keys(Keys.ENTER)
                 time.sleep(1)
                 if is_element_present(driver, By.CLASS_NAME, util_policy_popup_class):
                     util_policy_popup_element = get_element(driver, util_policy_popup_class, locator="CLASS_NAME")
                     util_policy_popup_element.send_keys(Keys.ENTER)
-
-                if is_element_present(driver, By.NAME, resumes_per_page_name):
-                    soup = BeautifulSoup(driver.page_source, 'html.parser')
-                    script = soup.find_all('script')
-                    for x in script:
-                        line = str(x)
-                        pos = line.find('totalCount')
-                        if pos > -1:
-                            words = line.split(' ')
-                            res_count = words[words.index("searchData['totalCount']") + 2].strip()[:-1]
-                            part_df = spark.createDataFrame([(domain, tech, int(res_count), current_ts)], schema)
-                            complete_df = complete_df.union(part_df)
-                            break
-                else:
-                    log_msg(f"No results found for '{tech}'.")
+                complete_df = get_resume_count(spark, driver, domain, tech_category,
+                                               tech_name, current_date, complete_df)
+                # if is_element_present(driver, By.NAME, resumes_per_page_name):
+                #     soup = BeautifulSoup(driver.page_source, 'html.parser')
+                #     script = soup.find_all('script')
+                #     for x in script:
+                #         line = str(x)
+                #         pos = line.find('totalCount')
+                #         if pos > -1:
+                #             words = line.split(' ')
+                #             res_count = words[words.index("searchData['totalCount']") + 2].strip()[:-1]
+                #             part_df = spark.createDataFrame([(domain,
+                #                                               tech_category,
+                #                                               tech_name,
+                #                                               int(res_count),
+                #                                               current_date)],
+                #                                             schema)
+                #             complete_df = complete_df.union(part_df)
+                #             break
+                # else:
+                #     log_msg(f"No results found for '{tech_name}'.")
             else:
                 log_msg("No search box found.")
     complete_df = complete_df.withColumn('created_ts', complete_df['created_date'].cast(TimestampType())) \
@@ -272,6 +331,7 @@ def get_data(spark, driver, input):
 
 
 def ingest_data(properties, complete_df):
+    """Ingest data to Local PostgreSQL Server"""
     complete_df = complete_df.where("technology != ''")
     # complete_df.show(truncate=False)
     complete_df.write.format("jdbc").mode("append") \
