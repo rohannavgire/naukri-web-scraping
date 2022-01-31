@@ -223,7 +223,6 @@ def naukri_login(properties, headless=False):
 
 @retry(NoResultsFoundException, delay=2, tries=5)
 def get_resume_count(spark, driver, domain, tech_category, tech_name, current_date, complete_df):
-    print(f"Searching for {tech_name}")
     resumes_per_page_name = 'resumesPerPage'
 
     schema = StructType([
