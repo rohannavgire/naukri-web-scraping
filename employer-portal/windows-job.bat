@@ -1,0 +1,1 @@
+C:\Users\rohan\AppData\Local\Programs\Python\Python310\python.exe C:\Users\rohan\IdeaProjects\naukri-web-scraping\employer-portal\naukri_final.py %*

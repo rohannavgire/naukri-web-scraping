@@ -16,7 +16,7 @@ from selenium.common.exceptions import NoSuchElementException
 from bs4 import BeautifulSoup
 from random import uniform
 from pyspark.sql.types import *
-from datetime import datetime
+from datetime import date
 from time import sleep
 from retry import retry
 from NoResultsFoundException import NoResultsFoundException
@@ -266,7 +266,7 @@ def get_resume_count(spark, driver, domain, tech_category, tech_name, current_da
         raise
 
 
-def get_data(spark, driver, input):
+def get_data(spark, driver, search_string):
     """Populate dataframe with resume count"""
     schema = StructType([
         StructField("domain", StringType(), False),
@@ -280,11 +280,10 @@ def get_data(spark, driver, input):
 
     search_box_name = 'ezString'
     search_btn_id = 'gnbSrchBtn'
-    resumes_per_page_name = 'resumesPerPage'
 
-    current_date = str(datetime.now())
+    current_date = str(date.today())
 
-    for obj in input:
+    for obj in search_string:
         domain = obj["domain"][0]
         for tech in obj["technology"]:
             sleep(round(uniform(0.00, 5.00), 2))
@@ -303,25 +302,6 @@ def get_data(spark, driver, input):
                     util_policy_popup_element.send_keys(Keys.ENTER)
                 complete_df = get_resume_count(spark, driver, domain, tech_category,
                                                tech_name, current_date, complete_df)
-                # if is_element_present(driver, By.NAME, resumes_per_page_name):
-                #     soup = BeautifulSoup(driver.page_source, 'html.parser')
-                #     script = soup.find_all('script')
-                #     for x in script:
-                #         line = str(x)
-                #         pos = line.find('totalCount')
-                #         if pos > -1:
-                #             words = line.split(' ')
-                #             res_count = words[words.index("searchData['totalCount']") + 2].strip()[:-1]
-                #             part_df = spark.createDataFrame([(domain,
-                #                                               tech_category,
-                #                                               tech_name,
-                #                                               int(res_count),
-                #                                               current_date)],
-                #                                             schema)
-                #             complete_df = complete_df.union(part_df)
-                #             break
-                # else:
-                #     log_msg(f"No results found for '{tech_name}'.")
             else:
                 log_msg("No search box found.")
     complete_df = complete_df.withColumn('created_ts', complete_df['created_date'].cast(TimestampType())) \
@@ -353,17 +333,17 @@ def main():
         .config("spark.jars", "../Database/postgresql-42.3.1.jar") \
         .getOrCreate()
 
-    with open("data.json", "r") as jsonfile:
-        input = json.load(jsonfile)
+    with open("data.json", "r") as json_file:
+        input_file = json.load(json_file)
 
-    with open("properties.json", "r") as jsonfile:
-        properties = json.load(jsonfile)
+    with open("properties.json", "r") as json_file:
+        properties = json.load(json_file)
 
     driver = None
     try:
         status, driver = naukri_login(properties)
         if status:
-            complete_df = get_data(spark, driver, input["data"])
+            complete_df = get_data(spark, driver, input_file["data"])
             ingest_data(properties, complete_df)
 
     except Exception as e:
