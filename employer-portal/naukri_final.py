@@ -141,7 +141,6 @@ def load_naukri(headless):
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("headless")
 
-    driver = None
     try:
         s = Service('../chromedriver_win32/chromedriver.exe')
         driver = webdriver.Chrome(service=s, options=options)
@@ -345,12 +344,9 @@ def main():
         if status:
             complete_df = get_data(spark, driver, input_file["data"])
             ingest_data(properties, complete_df)
-
     except Exception as e:
         catch(e)
-
     finally:
-
         tear_down(driver)
 
     log_msg("-----Naukri.py Script Run Ended-----\n")
@@ -358,8 +354,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
