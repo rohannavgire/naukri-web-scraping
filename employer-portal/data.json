@@ -7,43 +7,43 @@
       "technology":[
         {
           "name":"Inventor",
-          "category":"None"
+          "category":"Engineering"
         },
         {
           "name":"SolidEdge",
-          "category":"None"
+          "category":"Engineering"
         },
         {
           "name":"SolidWorks",
-          "category":"None"
+          "category":"Engineering"
         },
         {
           "name":"AutoCAD",
-          "category":"None"
+          "category":"Engineering"
         },
         {
           "name":"Catia",
-          "category":"None"
+          "category":"Engineering"
         },
         {
           "name":"Siemens NX",
-          "category":"None"
+          "category":"Engineering"
         },
         {
           "name":"Pro-E",
-          "category":"None"
+          "category":"Engineering"
         },
         {
           "name":"Creo",
-          "category":"None"
+          "category":"Engineering"
         },
         {
           "name":"AnSys",
-          "category":"None"
+          "category":"Engineering"
         },
         {
           "name":"Revit",
-          "category":"None"
+          "category":"Engineering"
         }
       ]
     },
